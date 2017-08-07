@@ -1,0 +1,15 @@
+{
+  "name": "手淘ATC团队 前端博客",
+  "short_name": "ATC前端博客",
+  "lang": "zh-CN",
+  "start_url": "/#/welcome",
+  "display": "fullscreen",
+  "theme_color": "#f18f3e",
+  "icons": [
+    {
+      "src": "https://gw.alicdn.com/tfs/TB1nnKkSFXXXXcYXXXXXXXXXXXX-152-152.jpg",
+      "sizes": "152x152",
+      "type": "image/jpg"
+    }
+  ]
+}

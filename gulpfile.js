@@ -9,17 +9,19 @@ var adaptive = require('postcss-adaptive')
 var precss = require('precss')
 var cssnano = require('cssnano')
 var calc = require('postcss-calc')
+var browserSync = require('browser-sync')
+var reload = browserSync.reload
+var swPrecache = require('sw-precache')
 
-
-var appList = ['main']
+var appList = ['index']
 var BASE_DPR = 2 // NEED CONFIG IN EACH PROJECT
 var REM_UNIT = 75 // NEED CONFIG IN EACH PROJECT
 var IMG_PATH = 'images/'
-var IMG_TYPES = ['png', 'jpg', 'jpeg', 'gif'];
+var IMG_TYPES = ['png', 'jpg', 'jpeg', 'gif']
 var images = IMG_PATH + '**/*.{' + IMG_TYPES.join(',') + '}'
 
 
-gulp.task('default', ['build'], function () {
+gulp.task('default', ['build', 'move-html', 'generate-service-worker'], function () {
   console.log('done')
 })
 
@@ -39,32 +41,80 @@ gulp.task('bundle', ['images'], function () {
 gulp.task('watch', function () {
   return gulp.src(mapFiles(appList, 'js'))
     .pipe(named())
-    .pipe(webpack(getConfig({watch: true, devtool: 'source-map'})))
+    .pipe(webpack(getConfig({
+      watch: true,
+      devtool: 'source-map'
+    })))
     .pipe(gulp.dest('dist/'))
 })
 
-gulp.task('build', ['bundle'], function () {
+gulp.task('move-html', function () {
   return gulp.src(mapFiles(appList, 'html'))
-    .pipe(htmlone())
     .pipe(gulp.dest('dist/'))
 })
+
+// browser-sync
+gulp.task('browser-sync', function () {
+  browserSync({
+    port: 3000,
+    server: {
+      baseDir: "./dist",
+      index: "../src/index.html"
+    },
+    https: false
+  })
+  gulp.watch(['dist/**/*', 'src/index.html']).on('change', function (file) {
+    reload(file.path)
+  })
+})
+
+gulp.task('generate-service-worker', function (callback) {
+  var rootDir = 'dist'
+
+  swPrecache.write(`${rootDir}/service-worker.js`, {
+    staticFileGlobs: [rootDir + '/**/*.{js,html,css,png,jpg,gif,svg,eot,ttf,woff}'],
+    stripPrefix: rootDir
+  }, callback)
+})
+
+gulp.task('dev', ['watch', 'move-html', 'generate-service-worker', 'browser-sync'])
 
 
 /**
  * @private
  */
-function getConfig (opt) {
+function getConfig(opt) {
   var config = {
     output: {
       publicPath: '../dist/'
     },
     module: {
-      loaders: [
-        {test: /\.vue$/, loader: 'vue'},
-        {test: /\.json$/, loader: 'json'},
-        {test: /\.js$/, loader: 'babel', exclude: /node_modules/},
-        {test: /\.css$/, loader: 'style-loader!css-loader!postcss-loader'},
-        {test: /\.(?:jpg|jpeg|gif|png)$/, loader: '@ali/img4dpr-loader?highq=q90&lowq=q75&sharpen=s150'}
+      loaders: [{
+          test: /\.vue$/,
+          loader: 'vue'
+        },
+        {
+          test: /\.json$/,
+          loader: 'json'
+        },
+        {
+          test: /\.js$/,
+          loader: 'babel',
+          exclude: /node_modules/
+        },
+        {
+          test: /\.css$/,
+          loader: 'style-loader!css-loader!postcss-loader',
+          exclude: /node_modules/
+        },
+        {
+          test: /\.css$/,
+          loader: 'style-loader!css-loader'
+        },
+        {
+          test: /\.(?:jpg|jpeg|gif|png)$/,
+          loader: '@ali/img4dpr-loader?highq=q90&lowq=q75&sharpen=s150'
+        }
       ]
     },
     vue: {
@@ -108,5 +158,7 @@ function getConfig (opt) {
  * @private
  */
 function mapFiles(list, extname) {
-  return list.map(function (app) {return 'src/' + app + '.' + extname})
+  return list.map(function (app) {
+    return 'src/' + app + '.' + extname
+  })
 }

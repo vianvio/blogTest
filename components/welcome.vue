@@ -1,6 +1,12 @@
 <style scoped>
-  p {display: block; text-align: center;}
-  p.qux {margin: 1em 2em;}
+p {
+  display: block;
+  text-align: center;
+}
+
+p.qux {
+  margin: 1em 2em;
+}
 </style>
 
 <template>
@@ -11,22 +17,22 @@
 </template>
 
 <script>
-  export default {
-    // props: ['baz'],
-    props: {
-      baz: {
-        default: 'qqq'
-      },
-      list: {
-        default() {
-          return ['a']
-        }
+export default {
+  // props: ['baz'],
+  props: {
+    baz: {
+      default: 'qqq'
+    },
+    list: {
+      default() {
+        return ['a']
       }
-    },
-    components: {
-    },
-    data() {
-      return {}
     }
+  },
+  components: {
+  },
+  data() {
+    return {}
   }
+}
 </script>
